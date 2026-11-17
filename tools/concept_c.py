@@ -4,7 +4,7 @@ from common import *
 import apps_cards
 
 OUT = Path(__file__).parent / 'c'
-BG, WIN, BAR, LINE, INK, DIM, MUTE = '#07090c', '#0b0f14', '#141a22', 'rgba(255,255,255,.08)', '#e6edf3', '#8b949e', '#4b5563'
+WIN, BAR, LINE, INK, DIM, MUTE = '#0b0f14', '#141a22', 'rgba(255,255,255,.08)', '#e6edf3', '#8b949e', '#4b5563'
 GREEN, BLUE2, AMBER, PINK, BLUE = '#34d399', '#60a5fa', '#fbbf24', '#f472b6', '#2563eb'
 MONO = "JBM,ui-monospace,SFMono-Regular,Menlo,Consolas,monospace"
 SANS = "Inter,system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif"
@@ -61,7 +61,7 @@ def prompt(x, y, cmd, delay, size=19):
 
 
 def header():
-    W, H = 1240, 560
+    W, H = PANEL - 2 * PAD, 560
     b = [window(W, H, 'dfklabs — zsh — 120×32')]
     b.append(prompt(40, 94, 'whoami --pretty', .2))
     b.append(banner('DFK', 46, 130, 15, GREEN, 1.0) + banner('LABS', 46, 230, 15, BLUE2, 1.15))
@@ -79,11 +79,16 @@ def header():
     b.append(f'<text x="40" y="460" class="m show" font-size="18" fill="{DIM}" style="animation-delay:2.4s"># small software that works offline, on-device, without an account.</text>')
     b.append(prompt(40, 512, '', 2.9))
     b.append(f'<rect x="{40 + 19 * 8.4}" y="495" width="11" height="22" fill="{GREEN}" class="blink"/>')
-    return svg(W, H, ''.join(b), font_css(*FONTS) + CSS, 'DFK Labs — a terminal session: apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking.')
+    # the prompt that opens the app cards sits under the window, in the same image
+    IH = PAD + H + 65
+    b = [f'<rect width="{PANEL}" height="{IH}" fill="{BG}"/><g transform="translate({PAD} {PAD})">'] + b + ['</g>',
+         f'<text x="{PAD + 15}" y="{PAD + H + 40}" class="m" font-size="17"><tspan fill="{GREEN}">dfk</tspan><tspan fill="{MUTE}">@</tspan><tspan fill="{BLUE2}">labs</tspan><tspan fill="{DIM}"> ~ $ </tspan><tspan fill="{INK}">open ~/apps ~/web</tspan><tspan fill="{MUTE}">   # each in its own colours</tspan></text>']
+    return svg(PANEL, IH, ''.join(b), font_css(*FONTS) + CSS, 'DFK Labs — a terminal session: apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking.')
 
 
-def repo(key):
-    W, H = 610, 450
+def repo(key, i):
+    x0, W = slot(2, i)
+    H = 450
     r = REPOS[key]
     b = [window(W, H, f'~/open-source/{key}')]
     b.append(prompt(30, 88, f'cat {key}/README.md | head', .2, 16))
@@ -111,7 +116,7 @@ def repo(key):
                  f'<text x="{x + w / 2:.0f}" y="{y + 30}" class="m" font-size="14" fill="{GREEN}" text-anchor="middle">{esc(c)}</text>')
         x += w + 10
     b.append(f'<text x="{W - 30}" y="{H - 24}" class="m" font-size="13" fill="{BLUE2}" text-anchor="end">open {r["url"]} ↗</text>')
-    return svg(W, H, ''.join(b), font_css(*FONTS) + CSS, f'{r["title"]} — {r["line1"]} {r["line2"]}')
+    return tile(PANEL // 2, H + PAD, x0, ''.join(b), font_css(*FONTS) + CSS, f'{r["title"]} — {r["line1"]} {r["line2"]}')
 
 
 def apps():
@@ -133,102 +138,65 @@ def apps():
     return svg(W, H, ''.join(b), font_css(*FONTS) + CSS, 'Also from DFK Labs: Birdio, Nitnoi, Cue, Cooked, Quakes and Studio.')
 
 
-def label():
-    W, H = 1240, 70
-    b = [f'<rect width="{W}" height="{H}" fill="{BG}"/>',
-         f'<text x="30" y="44" class="m" font-size="17"><tspan fill="{GREEN}">dfk</tspan><tspan fill="{MUTE}">@</tspan><tspan fill="{BLUE2}">labs</tspan><tspan fill="{DIM}"> ~ $ </tspan><tspan fill="{INK}">open ~/apps ~/web</tspan><tspan fill="{MUTE}">   # each in its own colours</tspan></text>']
-    return svg(W, H, ''.join(b), font_css(('JBM', 500)) + CSS, 'open ~/apps ~/web')
-
-
 def label_repos():
-    W, H = 1240, 100
+    W, H = PANEL, 130   # at least 24px tall on a phone, or the line box shows under it
     b = [f'<rect width="{W}" height="{H}" fill="{BG}"/>',
-         f'<text x="30" y="40" class="m" font-size="17"><tspan fill="{GREEN}">dfk</tspan><tspan fill="{MUTE}">@</tspan><tspan fill="{BLUE2}">labs</tspan><tspan fill="{DIM}"> ~ $ </tspan><tspan fill="{INK}">ls ~/open-source</tspan></text>',
-         f'<text x="30" y="76" class="m" font-size="17"><tspan fill="{BLUE2}" font-weight="700">airgap/</tspan><tspan fill="{DIM}">        text over sound            </tspan><tspan fill="{BLUE2}" font-weight="700">deploybudget/</tspan><tspan fill="{DIM}">   vercel builds, on a budget</tspan></text>']
+         f'<text x="30" y="50" class="m" font-size="17"><tspan fill="{GREEN}">dfk</tspan><tspan fill="{MUTE}">@</tspan><tspan fill="{BLUE2}">labs</tspan><tspan fill="{DIM}"> ~ $ </tspan><tspan fill="{INK}">ls ~/open-source</tspan></text>',
+         f'<text x="30" y="86" class="m" font-size="17"><tspan fill="{BLUE2}" font-weight="700">airgap/</tspan><tspan fill="{DIM}">        text over sound            </tspan><tspan fill="{BLUE2}" font-weight="700">deploybudget/</tspan><tspan fill="{DIM}">   vercel builds, on a budget</tspan></text>']
     return svg(W, H, ''.join(b), font_css(('JBM', 500), ('JBM', 700)) + CSS, 'ls ~/open-source: airgap, text over sound; deploybudget, Vercel builds on a budget')
 
 
-def key(name, label, handle):
-    W, H = 400, 150
-    b = [f'<rect width="{W}" height="{H}" fill="{BG}"/>',
-         f'<rect x="14" y="18" width="{W - 28}" height="{H - 30}" rx="16" fill="#05070a"/>',
-         f'<rect x="14" y="12" width="{W - 28}" height="{H - 34}" rx="16" fill="{BAR}" stroke="{LINE}" stroke-width="2"/>',
-         f'<rect x="24" y="20" width="{W - 48}" height="{H - 54}" rx="11" fill="{WIN}"/>',
-         f'<g transform="translate(46 46) scale(1.75)"><path d="{glyph(name)}" fill="{INK}"/></g>',
-         f'<text x="112" y="74" class="m" font-size="26" font-weight="800" fill="{INK}">{handle}</text>',
-         f'<text x="112" y="98" class="m" font-size="12" fill="{GREEN}" letter-spacing="2">open {label}</text>']
-    return svg(W, H, ''.join(b), font_css(('JBM', 500), ('JBM', 800)) + CSS, f'DFK Labs on {label}: {handle}')
+def key(name, label, handle, i):
+    x0, W = slot(3, i)   # a keycap as wide as an app card
+    b = [f'<rect x="0" y="6" width="{W:g}" height="120" rx="16" fill="#05070a"/>',
+         f'<rect x="1" y="1" width="{W - 2:g}" height="114" rx="16" fill="{BAR}" stroke="{LINE}" stroke-width="2"/>',
+         f'<rect x="10" y="8" width="{W - 20:g}" height="96" rx="11" fill="{WIN}"/>',
+         f'<g transform="translate(32 34) scale(1.75)"><path d="{glyph(name)}" fill="{INK}"/></g>',
+         f'<text x="98" y="62" class="m" font-size="26" font-weight="800" fill="{INK}">{handle}</text>',
+         f'<text x="98" y="86" class="m" font-size="12" fill="{GREEN}" letter-spacing="2">open {label}</text>']
+    return tile(PANEL // 3, 126 + PAD, x0, ''.join(b), font_css(('JBM', 500), ('JBM', 800)) + CSS, f'DFK Labs on {label}: {handle}')
 
 
 def footer():
-    W, H = 1240, 80
+    W, H = PANEL, 130   # at least 24px tall on a phone, like label_repos
     b = [f'<rect width="{W}" height="{H}" fill="{BG}"/>',
-         f'<text x="30" y="46" class="m" font-size="16"><tspan fill="{GREEN}">dfk</tspan><tspan fill="{MUTE}">@</tspan><tspan fill="{BLUE2}">labs</tspan><tspan fill="{DIM}"> ~ $ </tspan><tspan fill="{INK}">exit</tspan><tspan fill="{MUTE}">   # logout · © 2026 DFK Labs · dfklabs.com</tspan></text>']
+         f'<text x="30" y="50" class="m" font-size="16"><tspan fill="{GREEN}">dfk</tspan><tspan fill="{MUTE}">@</tspan><tspan fill="{BLUE2}">labs</tspan><tspan fill="{DIM}"> ~ $ </tspan><tspan fill="{INK}">exit</tspan></text>',
+         f'<text x="30" y="80" class="m" font-size="16"><tspan fill="{DIM}">logout</tspan><tspan fill="{MUTE}">   # © 2026 DFK Labs · dfklabs.com</tspan></text>']
     return svg(W, H, ''.join(b), font_css(('JBM', 500)) + CSS, 'exit. © 2026 DFK Labs.')
 
 
 def readme():
+    """One paragraph of images, row by row. No whitespace between images and align="top" on each,
+    so the panel has no seams; the sentences that used to sit under the cards live in the alt text."""
     L = LINKS
-    return f'''<p align="center">
-  <a href="{L['site']}"><img src="assets/terminal.svg" width="100%" alt="DFK Labs — apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking."></a>
-</p>
-
-<p align="center"><img src="assets/label-apps.svg" width="100%" alt="open ~/apps ~/web"></p>
-
-{apps_cards.readme_block()}
-
-<p align="center">
-  <a href="https://dfklabs.com/birdio"><b>Birdio</b></a>, the free golf app for iPhone and Apple Watch: your real handicap, every round remembered ·
-  <a href="https://dfklabs.com/cooked"><b>Cooked</b></a>, your feeds measured in metres for iPhone ·
-  <a href="https://dfklabs.com/nitnoi"><b>Nitnoi</b></a>, the words and the money of your trip on your Apple Watch ·
-  <a href="https://dfklabs.com/cue"><b>Cue</b></a>, discreet speaker notes for Apple Watch ·
-  <a href="https://dfklabs.com/quake"><b>Quakes</b></a>, a live earthquake tracker and map ·
-  <a href="https://studio.dfklabs.com"><b>Studio</b></a>, free browser tools that never upload your files
-</p>
-
-<p align="center"><img src="assets/label-repos.svg" width="100%" alt="ls ~/open-source: airgap and deploybudget"></p>
-
-<p align="center">
-  <a href="{L['airgap']}"><img src="assets/repo-airgap.svg" width="49%" alt="airgap — text over sound. Two phones, flight mode on: one chirps, the other reads."></a>
-  <a href="{L['deploybudget']}"><img src="assets/repo-deploybudget.svg" width="49%" alt="deploybudget — stop Vercel from building every branch you push."></a>
-</p>
-
-<p align="center">
-  <a href="{L['airgap']}"><b>airgap</b></a>: send text between two phones with sound, no internet, no server ·
-  <a href="{L['deploybudget']}"><b>deploybudget</b></a>: stop Vercel from building every branch you push
-</p>
-
-<p align="center">
-  <a href="{L['x']}"><img src="assets/x.svg" width="32%" alt="X: @dfklabs"></a>
-  <a href="{L['instagram']}"><img src="assets/instagram.svg" width="32%" alt="Instagram: @dfklabs"></a>
-  <a href="{L['reddit']}"><img src="assets/reddit.svg" width="32%" alt="Reddit: r/dfklabs"></a>
-</p>
-
-<p align="center">
-  <a href="https://dfklabs.com"><b>dfklabs.com</b></a> ·
-  <a href="{L['x']}">X @dfklabs</a> ·
-  <a href="{L['instagram']}">Instagram @dfklabs</a> ·
-  <a href="{L['reddit']}">Reddit r/dfklabs</a>
-</p>
-
-<p align="center"><img src="assets/footer.svg" width="100%" alt="exit. © 2026 DFK Labs."></p>
-'''
+    rows = [
+        img('terminal.svg', '100%', 'DFK Labs — apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking.', L['site']),
+        apps_cards.readme_block(),
+        img('label-repos.svg', '100%', 'ls ~/open-source: airgap and deploybudget', L['repos']),
+        img('repo-airgap.svg', '50%', 'airgap — text over sound. Two phones, flight mode on: one chirps, the other reads. '
+            'Send text between two phones with sound, no internet, no server.', L['airgap'])
+        + img('repo-deploybudget.svg', '50%', 'deploybudget — stop Vercel from building every branch you push.', L['deploybudget']),
+        img('x.svg', THIRD, 'X: @dfklabs', L['x']) + img('instagram.svg', THIRD, 'Instagram: @dfklabs', L['instagram'])
+        + img('reddit.svg', THIRD, 'Reddit: r/dfklabs', L['reddit']),
+        img('footer.svg', '100%', 'exit. © 2026 DFK Labs — dfklabs.com', L['site']),
+    ]
+    return '<p align="center">' + '<br>\n'.join(rows) + '</p>\n'
 
 
-def build():
-    a = OUT / 'assets'; a.mkdir(parents=True, exist_ok=True)
+def build(out=OUT):
+    out = Path(out); a = out / 'assets'; a.mkdir(parents=True, exist_ok=True)
     (a / 'terminal.svg').write_text(header())
-    (a / 'repo-airgap.svg').write_text(repo('airgap'))
-    (a / 'repo-deploybudget.svg').write_text(repo('deploybudget'))
-    (a / 'label-apps.svg').write_text(label())
+    (a / 'repo-airgap.svg').write_text(repo('airgap', 0))
+    (a / 'repo-deploybudget.svg').write_text(repo('deploybudget', 1))
     (a / 'label-repos.svg').write_text(label_repos())
     apps_cards.build(a)
-    (a / 'x.svg').write_text(key('x', 'x.com', '@dfklabs'))
-    (a / 'instagram.svg').write_text(key('instagram', 'instagram', '@dfklabs'))
-    (a / 'reddit.svg').write_text(key('reddit', 'reddit', 'r/dfklabs'))
+    (a / 'x.svg').write_text(key('x', 'x.com', '@dfklabs', 0))
+    (a / 'instagram.svg').write_text(key('instagram', 'instagram', '@dfklabs', 1))
+    (a / 'reddit.svg').write_text(key('reddit', 'reddit', 'r/dfklabs', 2))
     (a / 'footer.svg').write_text(footer())
-    (OUT / 'README.md').write_text(readme())
+    (out / 'README.md').write_text(readme())
 
 
 if __name__ == '__main__':
-    build()
+    import sys
+    build(*sys.argv[1:2])   # optional output folder, e.g. profile

@@ -1,9 +1,9 @@
 """Shared pieces for the three profile README concepts."""
-import base64, json, re
+import base64, json, os, re
 from pathlib import Path
 
-DFK = Path('/home/claude/dfk')
-DAIFUKUS = Path('/home/claude/daifukus/daifukus')
+DFK = Path(os.environ.get('DFK', '/home/claude/dfk'))
+DAIFUKUS = Path(os.environ.get('DAIFUKUS', '/home/claude/daifukus/daifukus'))
 FONTS = DFK / 'fonts/files'
 SYMS = json.load(open(Path(__file__).parent / 'syms.json'))   # real airgap tones for "dfklabs"
 
@@ -14,7 +14,15 @@ LINKS = {
     'x': 'https://x.com/dfklabs',
     'instagram': 'https://instagram.com/dfklabs',
     'reddit': 'https://www.reddit.com/r/dfklabs',
+    'repos': 'https://github.com/orgs/DFKlabs/repositories',
 }
+
+# The README is one continuous black panel. GitHub can't colour the page behind it, so every image
+# paints its own background and margins, and the README sets the images edge to edge, with no gaps.
+PANEL = 1260   # panel width in SVG units; every row of images adds up to exactly this
+PAD = 15       # outer margin and gutter between tiles; each tile also keeps half of it above and below
+BG = '#07090c'
+THIRD = '33.333%'   # README width of a tile in a row of three
 
 APPS = [  # name, one line (from each landing page), icon
     ('Birdio', 'every round, remembered', 'birdio'),
@@ -56,12 +64,29 @@ def glyph(name):
     return re.search(r' d="([^"]+)"', s).group(1)
 
 
-REDUCED = '@media (prefers-reduced-motion:reduce){*{animation:none!important;opacity:1!important;transform:none!important}}'
+# only the animated elements (they all carry a class): a bare * would also undo the transforms that place things
+REDUCED = '@media (prefers-reduced-motion:reduce){[class]{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important}}'
 
 
 def svg(w, h, body, css='', label=''):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 {w} {h}" width="{w}" height="{h}" role="img" aria-label="{label}">'
             f'<title>{label}</title><style>text{{white-space:pre}}\n{css}\n{REDUCED}</style>{body}</svg>')
+
+
+def slot(n, i):
+    """Tile i in a row of n: (x, width) of its content, local to its own image (PANEL // n wide)."""
+    w = (PANEL - (n + 1) * PAD) / n
+    return PAD + i * (w + PAD) - i * PANEL / n, w
+
+
+def tile(w, h, x, body, css='', label=''):
+    """An image w × h on the panel background, its content moved to x and half a gutter down."""
+    return svg(w, h, f'<rect width="{w}" height="{h}" fill="{BG}"/><g transform="translate({x:g} {PAD / 2:g})">{body}</g>', css, label)
+
+
+def img(src, width, alt, href):
+    """One README image. align="top" drops the gap a baseline leaves under inline images."""
+    return f'<a href="{href}"><img src="assets/{src}" width="{width}" align="top" alt="{alt}"></a>'
 
 
 def esc(s):

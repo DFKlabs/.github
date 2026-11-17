@@ -7,7 +7,7 @@ quake/index.html and studio/index.html. Icons are the ones those pages use now.
 import base64, io
 from pathlib import Path
 from PIL import Image
-from common import DFK, font_css, svg, esc
+from common import DFK, PAD, PANEL, THIRD, esc, font_css, img, slot, tile
 
 W, H = 400, 440
 
@@ -40,6 +40,18 @@ CARDS = {
                    lines=['Small tools that', 'never see your files.'], hi=1, icon=None),
 }
 
+ROWS = [['birdio', 'cooked', 'nitnoi'], ['cue', 'quakes', 'studio']]
+
+# what each app is, in a sentence; it goes in the README's alt text after the card's own words
+DESC = {
+    'birdio': 'The free golf app for iPhone and Apple Watch.',
+    'cooked': 'For iPhone.',
+    'nitnoi': 'The words and the money of your trip on your Apple Watch.',
+    'cue': 'Discreet speaker notes for Apple Watch.',
+    'quakes': 'A live earthquake tracker and map.',
+    'studio': 'Free browser tools that never upload your files.',
+}
+
 FAMILY = {'Fredoka': "Fredoka,ui-rounded,system-ui,sans-serif", 'Nunito': "Nunito,ui-rounded,system-ui,sans-serif",
           'Inter': "Inter,-apple-system,'SF Pro Text',system-ui,sans-serif", 'JBM': "JBM,ui-monospace,monospace",
           'Plex': "Plex,-apple-system,'Segoe UI',system-ui,sans-serif", 'PlexMono': "PlexMono,ui-monospace,monospace"}
@@ -54,7 +66,7 @@ def plex_css(*ws, mono=False):
     return '\n'.join(out)
 
 
-def card(key):
+def card(key, i):
     c = CARDS[key]
     fonts = set()
     for fam, w in [(c['display'], c['dw']), (c['text'], c['tw']), (c['mono'] or 'JBM', 500)]:
@@ -108,23 +120,22 @@ def card(key):
     pw = 28 + len(slug) * 8.6 + 22
     b.append(f'<rect x="34" y="{H - 82}" width="{pw:.0f}" height="44" rx="22" fill="{c["acc"]}"/>'
              f'<text x="{34 + 22}" y="{H - 54}" font-family="{mono}" font-size="14" fill="{c["on"]}">{slug} →</text>')
-    return svg(W, H, ''.join(b), '\n'.join(css), f'{c["name"]} — {" ".join(c["lines"])} {slug}')
+    x, w = slot(3, i)
+    assert w == W
+    return tile(PANEL // 3, H + PAD, x, ''.join(b), '\n'.join(css), f'{c["name"]} — {" ".join(c["lines"])} {slug}')
 
 
 def build(out):
     out = Path(out); out.mkdir(parents=True, exist_ok=True)
-    for k in CARDS:
-        (out / f'app-{k}.svg').write_text(card(k))
+    for row in ROWS:
+        for i, k in enumerate(row):
+            (out / f'app-{k}.svg').write_text(card(k, i))
 
 
 def readme_block():
-    rows = [['birdio', 'cooked', 'nitnoi'], ['cue', 'quakes', 'studio']]
-    alt = {k: f'{CARDS[k]["name"]} — {" ".join(CARDS[k]["lines"])}' for k in CARDS}
-    out = []
-    for row in rows:
-        imgs = '\n  '.join(f'<a href="{CARDS[k]["url"]}"><img src="assets/app-{k}.svg" width="32%" alt="{alt[k]}"></a>' for k in row)
-        out.append(f'<p align="center">\n  {imgs}\n</p>')
-    return '\n\n'.join(out)
+    """The two rows of cards, each row on one line with nothing between the images."""
+    alt = {k: f'{CARDS[k]["name"]} — {" ".join(CARDS[k]["lines"])} {DESC[k]}' for k in CARDS}
+    return '<br>\n'.join(''.join(img(f'app-{k}.svg', THIRD, alt[k], CARDS[k]['url']) for k in row) for row in ROWS)
 
 
 if __name__ == '__main__':
