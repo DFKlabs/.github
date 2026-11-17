@@ -16,4 +16,5 @@ The README is one continuous black panel. GitHub can't colour the page behind
 it, so every image paints its own background and margins (`PANEL`, `PAD`,
 `slot()` and `tile()` in `common.py`), and the README sets the images edge to
 edge: nothing between them, and `align="top"` on each so no baseline gap shows.
-What each app is, in a sentence, goes in the alt text.
+Under the panel the README says it all again in real text, with every link, for
+search engines and AI readers (`text()` in `concept_c.py`).
