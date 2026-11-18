@@ -8,7 +8,9 @@ scripts. Nothing is drawn by hand.
 
 They read the fonts and the current app icons from a checkout of `daifukus/DFK`
 (the `DFK` and `DAIFUKUS` environment variables, or the default paths in
-`common.py`). Colours, typefaces and headlines of each app card come from that
+`common.py`). UNIT, waving in the terminal, is drawn by his own rig from that checkout:
+`tools/unit/src/flipbook.py` turns his "hi, i'm unit" clip into an SVG that animates with CSS
+alone, the only kind of animation a README image can run. Colours, typefaces and headlines of each app card come from that
 app's own landing page (see `apps_cards.py`). Fonts are embedded in the SVGs, so
 GitHub shows the real faces; animations respect `prefers-reduced-motion`.
 

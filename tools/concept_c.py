@@ -20,6 +20,7 @@ CSS = f"""
 @keyframes scan{{from{{transform:translateY(-120px)}}to{{transform:translateY(760px)}}}}
 """
 FONTS = (('JBM', 500), ('JBM', 700), ('JBM', 800), ('Inter', 900))
+UNIT_X, UNIT_Y, UNIT_S = 830, 350, .38   # where UNIT stands in the header window (his rig is a 1000-unit square)
 
 # a 5-row block font for the banner, drawn with full blocks
 GLYPHS = {
@@ -60,14 +61,24 @@ def prompt(x, y, cmd, delay, size=19):
             f'<text x="{x + size * 8.4}" y="{y}" class="m type" font-size="{size}" fill="{INK}" style="animation-delay:{delay + .15}s">{esc(cmd)}</text>')
 
 
+def unit_hello(start):
+    """UNIT's "hi, i'm unit" clip as a flipbook, drawn by his own rig from the DFK checkout."""
+    import sys
+    sys.path.insert(0, str(UNIT_SRC))
+    from anim import CLIPS
+    from flipbook import flipbook
+    clip = next(c for c in CLIPS if c.name == '01-hi-im-unit')
+    return flipbook(clip, fps=30, ns='u', start=start, parts=True)
+
+
 def header():
-    W, H = PANEL - 2 * PAD, 560
+    W, H = PANEL - 2 * PAD, 700
     b = [window(W, H, 'dfklabs — zsh — 120×32')]
     b.append(prompt(40, 94, 'whoami --pretty', .2))
     b.append(banner('DFK', 46, 130, 15, GREEN, 1.0) + banner('LABS', 46, 230, 15, BLUE2, 1.15))
     info = [('org', 'DFK Labs', INK), ('builds', 'iPhone · Apple Watch · web', INK), ('apps', 'Birdio · Cooked · Nitnoi · Cue', INK),
             ('web', 'Quakes · Studio', INK), ('rules', 'no servers · no accounts · no tracking', AMBER),
-            ('site', 'dfklabs.com', BLUE2)]
+            ('site', 'dfklabs.com', BLUE2), ('unit', 'online · dfklabs.com/unit', GREEN)]
     y = 138
     for k, (key, val, col) in enumerate(info):
         d = 1.4 + k * .16
@@ -76,14 +87,24 @@ def header():
     b.append(f'<line x1="600" y1="{y - 18}" x2="1190" y2="{y - 18}" stroke="{LINE}" class="show" style="animation-delay:2.5s"/>')
     for i, c in enumerate(['#0f1115', '#f87171', GREEN, AMBER, BLUE, PINK, '#22d3ee', INK]):
         b.append(f'<rect x="{600 + i * 40}" y="{y}" width="34" height="22" rx="3" fill="{c}" class="show" style="animation-delay:{2.6 + i * .04:.2f}s"/>')
-    b.append(f'<text x="40" y="460" class="m show" font-size="18" fill="{DIM}" style="animation-delay:2.4s"># small software that works offline, on-device, without an account.</text>')
-    b.append(prompt(40, 512, '', 2.9))
-    b.append(f'<rect x="{40 + 19 * 8.4}" y="495" width="11" height="22" fill="{GREEN}" class="blink"/>')
+    for k, line in enumerate(['# small software that works offline,', '# on-device, without an account.']):
+        b.append(f'<text x="40" y="{420 + k * 26}" class="m show" font-size="18" fill="{DIM}" style="animation-delay:2.4s">{line}</text>')
+    # unitsay: like cowsay, with UNIT, the studio's mascot, as the one talking
+    b.append(prompt(40, 516, 'unitsay "hi, i\'m unit."', 2.9))
+    said = 3.6
+    bubble = [' ________________', "< hi, i'm unit. >", ' ----------------', '                \\', '                 \\']
+    b.append(f'<g class="show" style="animation-delay:{said}s">' + ''.join(
+        f'<text x="668" y="{482 + k * 23}" class="m" font-size="17" fill="{INK if k == 1 else DIM}">{esc(t)}</text>' for k, t in enumerate(bubble)) + '</g>')
+    defs, unit, unit_css = unit_hello(said)
+    b.append(f'{defs}<g transform="translate({UNIT_X} {UNIT_Y}) scale({UNIT_S})">{unit}</g>')
+    b.append(f'<g class="show" style="animation-delay:{said + .3:.1f}s">{prompt(40, 568, "", 0)}'
+             f'<rect x="{40 + 19 * 8.4}" y="551" width="11" height="22" fill="{GREEN}" class="blink"/></g>')
     # the prompt that opens the app cards sits under the window, in the same image
     IH = PAD + H + 65
     b = [f'<rect width="{PANEL}" height="{IH}" fill="{BG}"/><g transform="translate({PAD} {PAD})">'] + b + ['</g>',
          f'<text x="{PAD + 15}" y="{PAD + H + 40}" class="m" font-size="17"><tspan fill="{GREEN}">dfk</tspan><tspan fill="{MUTE}">@</tspan><tspan fill="{BLUE2}">labs</tspan><tspan fill="{DIM}"> ~ $ </tspan><tspan fill="{INK}">open ~/apps ~/web</tspan><tspan fill="{MUTE}">   # each in its own colours</tspan></text>']
-    return svg(PANEL, IH, ''.join(b), font_css(*FONTS) + CSS, 'DFK Labs — a terminal session: apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking.')
+    return svg(PANEL, IH, ''.join(b), font_css(*FONTS) + CSS + unit_css,
+               'DFK Labs — a terminal session: apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking. UNIT, the mascot, says hi.')
 
 
 def repo(key, i):
@@ -170,7 +191,8 @@ def readme():
     with no whitespace between images and align="top" on each, so it has no seams."""
     L = LINKS
     rows = [
-        img('terminal.svg', '100%', 'DFK Labs — apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking.', L['site']),
+        img('terminal.svg', '100%', 'DFK Labs — apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking. '
+            'UNIT, the studio\'s mascot, waves hello from the terminal.', L['site']),
         apps_cards.readme_block(),
         img('label-repos.svg', '100%', 'ls ~/open-source: airgap and deploybudget', L['repos']),
         img('repo-airgap.svg', '50%', 'airgap — text over sound. Two phones, flight mode on: one chirps, the other reads. '
@@ -190,6 +212,12 @@ def text():
 
 DFK Labs builds small software for iPhone, Apple Watch and the web that works offline, on-device and
 without an account: no servers, no accounts, no tracking. Everything is at [dfklabs.com]({L['site']}).
+
+### UNIT
+
+UNIT is the studio's character: the DFK mark with a screen for a face, a status light set into his rim
+and eyes that are glowing screen pills. He is the one waving from the terminal at the top of this page.
+Meet him at [dfklabs.com/unit]({L['unit']}).
 
 ### Apps
 

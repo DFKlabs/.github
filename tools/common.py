@@ -5,6 +5,7 @@ from pathlib import Path
 DFK = Path(os.environ.get('DFK', '/home/claude/dfk'))
 DAIFUKUS = Path(os.environ.get('DAIFUKUS', '/home/claude/daifukus/daifukus'))
 FONTS = DFK / 'fonts/files'
+UNIT_SRC = DFK / 'tools/unit/src'   # UNIT's rig, clips and flipbook.py
 SYMS = json.load(open(Path(__file__).parent / 'syms.json'))   # real airgap tones for "dfklabs"
 
 LINKS = {
@@ -15,6 +16,7 @@ LINKS = {
     'instagram': 'https://instagram.com/dfklabs',
     'reddit': 'https://www.reddit.com/r/dfklabs',
     'repos': 'https://github.com/orgs/DFKlabs/repositories',
+    'unit': 'https://dfklabs.com/unit',
 }
 
 # The README is one continuous black panel. GitHub can't colour the page behind it, so every image

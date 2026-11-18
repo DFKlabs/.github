@@ -1,4 +1,4 @@
-<p align="center"><a href="https://dfklabs.com"><img src="assets/terminal.svg" width="100%" align="top" alt="DFK Labs — apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking."></a><br>
+<p align="center"><a href="https://dfklabs.com"><img src="assets/terminal.svg" width="100%" align="top" alt="DFK Labs — apps for iPhone, Apple Watch and the web; no servers, no accounts, no tracking. UNIT, the studio's mascot, waves hello from the terminal."></a><br>
 <a href="https://dfklabs.com/birdio"><img src="assets/app-birdio.svg" width="33.333%" align="top" alt="Birdio — Your real handicap. Every round remembered. The free golf app for iPhone and Apple Watch."></a><a href="https://dfklabs.com/cooked"><img src="assets/app-cooked.svg" width="33.333%" align="top" alt="Cooked — Your feeds, measured in metres. For iPhone."></a><a href="https://dfklabs.com/nitnoi"><img src="assets/app-nitnoi.svg" width="33.333%" align="top" alt="Nitnoi — Sixteen words carry a market stall. The words and the money of your trip on your Apple Watch."></a><br>
 <a href="https://dfklabs.com/cue"><img src="assets/app-cue.svg" width="33.333%" align="top" alt="Cue — Your speech. On your wrist. Discreet speaker notes for Apple Watch."></a><a href="https://dfklabs.com/quake"><img src="assets/app-quakes.svg" width="33.333%" align="top" alt="Quakes — Every earthquake on Earth, minutes after it happens. A live earthquake tracker and map."></a><a href="https://studio.dfklabs.com"><img src="assets/app-studio.svg" width="33.333%" align="top" alt="Studio — Small tools that never see your files. Free browser tools that never upload your files."></a><br>
 <a href="https://github.com/orgs/DFKlabs/repositories"><img src="assets/label-repos.svg" width="100%" align="top" alt="ls ~/open-source: airgap and deploybudget"></a><br>
@@ -10,6 +10,12 @@
 
 DFK Labs builds small software for iPhone, Apple Watch and the web that works offline, on-device and
 without an account: no servers, no accounts, no tracking. Everything is at [dfklabs.com](https://dfklabs.com).
+
+### UNIT
+
+UNIT is the studio's character: the DFK mark with a screen for a face, a status light set into his rim
+and eyes that are glowing screen pills. He is the one waving from the terminal at the top of this page.
+Meet him at [dfklabs.com/unit](https://dfklabs.com/unit).
 
 ### Apps
 
